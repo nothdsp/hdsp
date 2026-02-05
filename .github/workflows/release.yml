@@ -1,0 +1,49 @@
+name: Maven Central Repo Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish-central:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Git Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Import GPG Private Key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          FINGERPRINT=$(gpg --list-secret-keys --keyid-format LONG --with-colons | awk -F: '$1 == "fpr" { print $10; exit }')
+          echo "Imported GPG fingerprint: $FINGERPRINT"
+          gpg --batch --import-ownertrust <<< "$FINGERPRINT:6:"
+      - name: Publish to Maven Central
+        env:
+          CENTRAL_USERNAME: ${{ secrets.SERVER_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+        run: |
+          # Create temporary settings.xml with server configuration
+          cat > settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>central</id>
+                <username>$CENTRAL_USERNAME</username>
+                <password>$CENTRAL_PASSWORD</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+          
+          # Run Maven deploy with the custom settings
+          mvn -B -Prelease -DskipTests -s settings.xml clean deploy

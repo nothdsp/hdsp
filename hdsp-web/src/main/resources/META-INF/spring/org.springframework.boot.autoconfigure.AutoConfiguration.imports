@@ -1,0 +1,3 @@
+io.github.hdsp.web.exception.GlobalExceptionHandler
+io.github.hdsp.web.mybatisplus.GlobalMybatisPlusInterceptor
+io.github.hdsp.web.mybatisplus.GlobalMetaObjectHandler

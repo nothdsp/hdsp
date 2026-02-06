@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-public class TraceIdInterceptor implements HandlerInterceptor {
+public class HdspTraceIdInterceptor implements HandlerInterceptor {
 
     private static final String TRACE_ID_KEY = "traceId";
 

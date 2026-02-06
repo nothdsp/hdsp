@@ -1,26 +1,24 @@
 package io.github.hdsp.web.config;
 
-import io.github.hdsp.web.interceptor.TraceIdInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import io.github.hdsp.web.interceptor.HdspTraceIdInterceptor;
+
 @AutoConfiguration
-public class WebConfig implements WebMvcConfigurer {
+public class HdspWebMvcConfigurer implements WebMvcConfigurer {
 
     @Bean
-    public TraceIdInterceptor traceIdInterceptor() {
-        return new TraceIdInterceptor();
+    public HandlerInterceptor traceIdInterceptor() {
+        return new HdspTraceIdInterceptor();
     }
-
-    @Autowired
-    private TraceIdInterceptor traceIdInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(traceIdInterceptor)
+        registry.addInterceptor(traceIdInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns("/error");
     }

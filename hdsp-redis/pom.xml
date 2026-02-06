@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.github.nothdsp</groupId>
         <artifactId>hdsp</artifactId>
-        <version>1.0.11</version>
+        <version>1.0.12</version>
     </parent>
 
     <artifactId>hdsp-redis</artifactId>
@@ -59,7 +59,6 @@
         <dependency>
             <groupId>org.apache.fory</groupId>
             <artifactId>fory-core</artifactId>
-            <version>0.13.1</version>
         </dependency>
     </dependencies>
 </project>

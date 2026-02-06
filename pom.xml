@@ -6,7 +6,7 @@
 
     <groupId>io.github.nothdsp</groupId>
     <artifactId>hdsp</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.12</version>
     <packaging>pom</packaging>
     
     <modules>
@@ -56,6 +56,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <jasypt.version>4.0.4</jasypt.version>
         <okhttp.version>4.12.0</okhttp.version>
+        <fory.version>0.13.1</fory.version>
     </properties>
 
     <dependencyManagement>
@@ -120,6 +121,11 @@
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp-sse</artifactId>
                 <version>${okhttp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.fory</groupId>
+                <artifactId>fory-core</artifactId>
+                <version>${fory.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

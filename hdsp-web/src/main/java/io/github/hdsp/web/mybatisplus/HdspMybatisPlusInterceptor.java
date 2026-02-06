@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 
 @Configuration
-public class GlobalMybatisPlusInterceptor {
+public class HdspMybatisPlusInterceptor {
     /**
      * 配置MyBatis-Plus拦截器
      * 

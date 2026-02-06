@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class HdspExceptionHandler {
 
     /**
      * 处理业务异常

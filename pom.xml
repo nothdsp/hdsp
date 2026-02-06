@@ -6,7 +6,7 @@
 
     <groupId>io.github.nothdsp</groupId>
     <artifactId>hdsp</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
     <packaging>pom</packaging>
     
     <modules>
@@ -146,6 +146,11 @@
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.48.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.ulisesbocchio</groupId>
+                    <artifactId>jasypt-maven-plugin</artifactId>
+                    <version>${jasypt.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

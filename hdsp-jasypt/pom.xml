@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.github.nothdsp</groupId>
         <artifactId>hdsp</artifactId>
-        <version>1.0.10</version>
+        <version>1.0.11</version>
     </parent>
 
     <artifactId>hdsp-jasypt</artifactId>
@@ -28,4 +28,13 @@
             <artifactId>jasypt-spring-boot-starter</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.ulisesbocchio</groupId>
+                <artifactId>jasypt-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

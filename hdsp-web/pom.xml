@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.github.nothdsp</groupId>
         <artifactId>hdsp</artifactId>
-        <version>1.0.14</version>
+        <version>1.0.15</version>
     </parent>
 
     <artifactId>hdsp-web</artifactId>

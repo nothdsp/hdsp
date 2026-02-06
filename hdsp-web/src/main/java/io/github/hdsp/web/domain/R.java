@@ -3,6 +3,7 @@ package io.github.hdsp.web.domain;
 import java.io.Serializable;
 
 import io.github.hdsp.web.domain.enums.HttpStatus;
+import io.github.hdsp.web.interceptor.TraceIdInterceptor;
 import lombok.Data;
 
 /**
@@ -35,10 +36,16 @@ public class R<T> implements Serializable {
     private Long timestamp;
 
     /**
+     * 追踪ID
+     */
+    private String traceId;
+
+    /**
      * 默认构造函数
      */
     public R() {
         this.timestamp = System.currentTimeMillis();
+        this.traceId = TraceIdInterceptor.getTraceId();
     }
 
     /**
@@ -53,6 +60,7 @@ public class R<T> implements Serializable {
         this.message = message;
         this.data = data;
         this.timestamp = System.currentTimeMillis();
+        this.traceId = TraceIdInterceptor.getTraceId();
     }
 
     /**

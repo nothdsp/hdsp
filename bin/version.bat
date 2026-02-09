@@ -1,9 +1,14 @@
 @echo off
+setlocal enabledelayedexpansion
 
-if "%~1"=="" (
-    echo ERROR: New version not specified, please provide parameter 1
-    exit /b
+set "version=%~1"
+if "%version%"=="" (
+    for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set "dt=%%I"
+    set "version=!dt:~0,14!"
+    echo Using date version: !version!
 )
 
-mvn versions:set -DnewVersion=%1 -DgenerateBackupPoms=false -DprocessAllModules=true
-echo New version set to %1
+endlocal & set "version=%version%"
+
+mvn versions:set -DnewVersion=%version% -DgenerateBackupPoms=false -DprocessAllModules=true
+echo New version set to %version%

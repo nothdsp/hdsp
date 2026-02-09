@@ -1,1 +1,1 @@
-org.springframework.boot.env.EnvironmentPostProcessor=io.github.hdsp.web.env.HdspEnvPostProcessor
+org.springframework.boot.env.EnvironmentPostProcessor=io.github.hdsp.web.config.HdspEnvPostProcessor

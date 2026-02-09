@@ -1,5 +1,3 @@
 io.github.hdsp.web.exception.HdspExceptionHandler
-io.github.hdsp.web.mybatisplus.HdspMybatisPlusInterceptor
-io.github.hdsp.web.mybatisplus.HdspMetaObjectHandler
-io.github.hdsp.web.mybatisplus.HdspMybatisPlusConfig
+io.github.hdsp.web.config.HdspMybatisPlusConfigurer
 io.github.hdsp.web.config.HdspWebMvcConfigurer

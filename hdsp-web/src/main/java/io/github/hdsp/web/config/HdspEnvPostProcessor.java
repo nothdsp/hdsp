@@ -1,4 +1,4 @@
-package io.github.hdsp.web.env;
+package io.github.hdsp.web.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,8 +21,10 @@ public class HdspEnvPostProcessor implements EnvironmentPostProcessor {
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Map<String, Object> props = new HashMap<>();
         props.put("jasypt.encryptor.password", "AiB5j9610k7MPIaFVytJC834EwGcp9gh");
+        props.put("mybatis-plus.global-config.banner", "false");
+        props.put("mybatis-plus.global-config.enable-sql-runner", "true");
         environment.getPropertySources().addFirst(
-                new MapPropertySource("hdspJasyptProperties", props));
+                new MapPropertySource("hdspProperties", props));
     }
 
 }

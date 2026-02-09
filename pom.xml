@@ -6,7 +6,7 @@
 
     <groupId>io.github.nothdsp</groupId>
     <artifactId>hdsp</artifactId>
-    <version>1.0.20</version>
+    <version>20260209095847</version>
     <packaging>pom</packaging>
     
     <modules>

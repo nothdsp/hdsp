@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.github.nothdsp</groupId>
         <artifactId>hdsp</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
 
     <artifactId>hdsp-bom</artifactId>
@@ -47,6 +47,11 @@
             <dependency>
                 <groupId>io.github.nothdsp</groupId>
                 <artifactId>hdsp-dify</artifactId>
+                <version>${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.nothdsp</groupId>
+                <artifactId>hdsp-oss</artifactId>
                 <version>${project.parent.version}</version>
             </dependency>
         </dependencies>

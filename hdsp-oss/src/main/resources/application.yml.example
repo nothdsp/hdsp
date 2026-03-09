@@ -1,0 +1,6 @@
+hdsp:
+  oss:
+    bucket: hdsp-oss
+    endpoint: http://localhost:9000
+    accessKeyId: changeme
+    accessKeySecret: changeme

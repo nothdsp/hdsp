@@ -66,10 +66,14 @@ public class RedisConfiguration {
             TypedJsonJacksonCodec jsonCodec = new TypedJsonJacksonCodec(Object.class, om);
             // 组合序列化 key 使用 String 内容使用通用 json 格式
             CompositeCodec codec = new CompositeCodec(StringCodec.INSTANCE, jsonCodec, jsonCodec);
-            config.setThreads(redissonProperties.getThreads())
-                .setNettyThreads(redissonProperties.getNettyThreads())
-                // 缓存 Lua 脚本 减少网络传输(redisson 大部分的功能都是基于 Lua 脚本实现)
-                .setUseScriptCache(true)
+            if (redissonProperties.getThreads() != null && redissonProperties.getThreads() > 0) {
+                config.setThreads(redissonProperties.getThreads());
+            }
+            if (redissonProperties.getNettyThreads() != null && redissonProperties.getNettyThreads() > 0) {
+                config.setNettyThreads(redissonProperties.getNettyThreads());
+            }
+            // 缓存 Lua 脚本 减少网络传输(redisson 大部分的功能都是基于 Lua 脚本实现)
+            config.setUseScriptCache(true)
                 .setCodec(codec);
             if (isVirtual()) {
                 config.setNettyExecutor(new VirtualThreadTaskExecutor("redisson-"));
@@ -80,16 +84,43 @@ public class RedisConfiguration {
             if (ObjectUtil.isNotNull(existingSentinel)) {
                 existingSentinel.setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()));
                 if (ObjectUtil.isNotNull(sentinelServersConfig)) {
-                    existingSentinel.setTimeout(sentinelServersConfig.getTimeout())
-                        .setClientName(sentinelServersConfig.getClientName())
-                        .setIdleConnectionTimeout(sentinelServersConfig.getIdleConnectionTimeout())
-                        .setSubscriptionConnectionPoolSize(sentinelServersConfig.getSubscriptionConnectionPoolSize())
-                        .setMasterConnectionMinimumIdleSize(sentinelServersConfig.getMasterConnectionMinimumIdleSize())
-                        .setMasterConnectionPoolSize(sentinelServersConfig.getMasterConnectionPoolSize())
-                        .setSlaveConnectionMinimumIdleSize(sentinelServersConfig.getSlaveConnectionMinimumIdleSize())
-                        .setSlaveConnectionPoolSize(sentinelServersConfig.getSlaveConnectionPoolSize())
-                        .setReadMode(sentinelServersConfig.getReadMode())
-                        .setSubscriptionMode(sentinelServersConfig.getSubscriptionMode());
+                    if (sentinelServersConfig.getTimeout() != null && sentinelServersConfig.getTimeout() > 0) {
+                        existingSentinel.setTimeout(sentinelServersConfig.getTimeout());
+                    }
+                    existingSentinel.setClientName(sentinelServersConfig.getClientName());
+                    if (sentinelServersConfig.getIdleConnectionTimeout() != null
+                        && sentinelServersConfig.getIdleConnectionTimeout() > 0) {
+                        existingSentinel.setIdleConnectionTimeout(sentinelServersConfig.getIdleConnectionTimeout());
+                    }
+                    if (sentinelServersConfig.getSubscriptionConnectionPoolSize() != null
+                        && sentinelServersConfig.getSubscriptionConnectionPoolSize() > 0) {
+                        existingSentinel.setSubscriptionConnectionPoolSize(
+                            sentinelServersConfig.getSubscriptionConnectionPoolSize());
+                    }
+                    if (sentinelServersConfig.getMasterConnectionMinimumIdleSize() != null
+                        && sentinelServersConfig.getMasterConnectionMinimumIdleSize() > 0) {
+                        existingSentinel.setMasterConnectionMinimumIdleSize(
+                            sentinelServersConfig.getMasterConnectionMinimumIdleSize());
+                    }
+                    if (sentinelServersConfig.getMasterConnectionPoolSize() != null
+                        && sentinelServersConfig.getMasterConnectionPoolSize() > 0) {
+                        existingSentinel.setMasterConnectionPoolSize(sentinelServersConfig.getMasterConnectionPoolSize());
+                    }
+                    if (sentinelServersConfig.getSlaveConnectionMinimumIdleSize() != null
+                        && sentinelServersConfig.getSlaveConnectionMinimumIdleSize() > 0) {
+                        existingSentinel.setSlaveConnectionMinimumIdleSize(
+                            sentinelServersConfig.getSlaveConnectionMinimumIdleSize());
+                    }
+                    if (sentinelServersConfig.getSlaveConnectionPoolSize() != null
+                        && sentinelServersConfig.getSlaveConnectionPoolSize() > 0) {
+                        existingSentinel.setSlaveConnectionPoolSize(sentinelServersConfig.getSlaveConnectionPoolSize());
+                    }
+                    if (sentinelServersConfig.getReadMode() != null) {
+                        existingSentinel.setReadMode(sentinelServersConfig.getReadMode());
+                    }
+                    if (sentinelServersConfig.getSubscriptionMode() != null) {
+                        existingSentinel.setSubscriptionMode(sentinelServersConfig.getSubscriptionMode());
+                    }
                     if (StrUtil.isNotBlank(sentinelServersConfig.getPassword())) {
                         existingSentinel.setPassword(sentinelServersConfig.getPassword());
                     }
@@ -104,17 +135,41 @@ public class RedisConfiguration {
                 var sentinel = config.useSentinelServers()
                     .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()))
                     .setMasterName(sentinelServersConfig.getMasterName())
-                    .addSentinelAddress(sentinelServersConfig.getSentinelAddresses().toArray(new String[0]))
-                    .setTimeout(sentinelServersConfig.getTimeout())
-                    .setClientName(sentinelServersConfig.getClientName())
-                    .setIdleConnectionTimeout(sentinelServersConfig.getIdleConnectionTimeout())
-                    .setSubscriptionConnectionPoolSize(sentinelServersConfig.getSubscriptionConnectionPoolSize())
-                    .setMasterConnectionMinimumIdleSize(sentinelServersConfig.getMasterConnectionMinimumIdleSize())
-                    .setMasterConnectionPoolSize(sentinelServersConfig.getMasterConnectionPoolSize())
-                    .setSlaveConnectionMinimumIdleSize(sentinelServersConfig.getSlaveConnectionMinimumIdleSize())
-                    .setSlaveConnectionPoolSize(sentinelServersConfig.getSlaveConnectionPoolSize())
-                    .setReadMode(sentinelServersConfig.getReadMode())
-                    .setSubscriptionMode(sentinelServersConfig.getSubscriptionMode());
+                    .addSentinelAddress(sentinelServersConfig.getSentinelAddresses().toArray(new String[0]));
+                if (sentinelServersConfig.getTimeout() != null && sentinelServersConfig.getTimeout() > 0) {
+                    sentinel.setTimeout(sentinelServersConfig.getTimeout());
+                }
+                sentinel.setClientName(sentinelServersConfig.getClientName());
+                if (sentinelServersConfig.getIdleConnectionTimeout() != null
+                    && sentinelServersConfig.getIdleConnectionTimeout() > 0) {
+                    sentinel.setIdleConnectionTimeout(sentinelServersConfig.getIdleConnectionTimeout());
+                }
+                if (sentinelServersConfig.getSubscriptionConnectionPoolSize() != null
+                    && sentinelServersConfig.getSubscriptionConnectionPoolSize() > 0) {
+                    sentinel.setSubscriptionConnectionPoolSize(sentinelServersConfig.getSubscriptionConnectionPoolSize());
+                }
+                if (sentinelServersConfig.getMasterConnectionMinimumIdleSize() != null
+                    && sentinelServersConfig.getMasterConnectionMinimumIdleSize() > 0) {
+                    sentinel.setMasterConnectionMinimumIdleSize(sentinelServersConfig.getMasterConnectionMinimumIdleSize());
+                }
+                if (sentinelServersConfig.getMasterConnectionPoolSize() != null
+                    && sentinelServersConfig.getMasterConnectionPoolSize() > 0) {
+                    sentinel.setMasterConnectionPoolSize(sentinelServersConfig.getMasterConnectionPoolSize());
+                }
+                if (sentinelServersConfig.getSlaveConnectionMinimumIdleSize() != null
+                    && sentinelServersConfig.getSlaveConnectionMinimumIdleSize() > 0) {
+                    sentinel.setSlaveConnectionMinimumIdleSize(sentinelServersConfig.getSlaveConnectionMinimumIdleSize());
+                }
+                if (sentinelServersConfig.getSlaveConnectionPoolSize() != null
+                    && sentinelServersConfig.getSlaveConnectionPoolSize() > 0) {
+                    sentinel.setSlaveConnectionPoolSize(sentinelServersConfig.getSlaveConnectionPoolSize());
+                }
+                if (sentinelServersConfig.getReadMode() != null) {
+                    sentinel.setReadMode(sentinelServersConfig.getReadMode());
+                }
+                if (sentinelServersConfig.getSubscriptionMode() != null) {
+                    sentinel.setSubscriptionMode(sentinelServersConfig.getSubscriptionMode());
+                }
                 if (StrUtil.isNotBlank(sentinelServersConfig.getPassword())) {
                     sentinel.setPassword(sentinelServersConfig.getPassword());
                 }
@@ -126,13 +181,27 @@ public class RedisConfiguration {
             RedissonProperties.SingleServerConfig singleServerConfig = redissonProperties.getSingleServerConfig();
             if (ObjectUtil.isNotNull(singleServerConfig) && getSentinelServersConfig(config) == null) {
                 var single = config.useSingleServer()
-                    .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()))
-                    .setTimeout(singleServerConfig.getTimeout())
-                    .setClientName(singleServerConfig.getClientName())
-                    .setIdleConnectionTimeout(singleServerConfig.getIdleConnectionTimeout())
-                    .setSubscriptionConnectionPoolSize(singleServerConfig.getSubscriptionConnectionPoolSize())
-                    .setConnectionMinimumIdleSize(singleServerConfig.getConnectionMinimumIdleSize())
-                    .setConnectionPoolSize(singleServerConfig.getConnectionPoolSize());
+                    .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()));
+                if (singleServerConfig.getTimeout() != null && singleServerConfig.getTimeout() > 0) {
+                    single.setTimeout(singleServerConfig.getTimeout());
+                }
+                single.setClientName(singleServerConfig.getClientName());
+                if (singleServerConfig.getIdleConnectionTimeout() != null
+                    && singleServerConfig.getIdleConnectionTimeout() > 0) {
+                    single.setIdleConnectionTimeout(singleServerConfig.getIdleConnectionTimeout());
+                }
+                if (singleServerConfig.getSubscriptionConnectionPoolSize() != null
+                    && singleServerConfig.getSubscriptionConnectionPoolSize() > 0) {
+                    single.setSubscriptionConnectionPoolSize(singleServerConfig.getSubscriptionConnectionPoolSize());
+                }
+                if (singleServerConfig.getConnectionMinimumIdleSize() != null
+                    && singleServerConfig.getConnectionMinimumIdleSize() > 0) {
+                    single.setConnectionMinimumIdleSize(singleServerConfig.getConnectionMinimumIdleSize());
+                }
+                if (singleServerConfig.getConnectionPoolSize() != null
+                    && singleServerConfig.getConnectionPoolSize() > 0) {
+                    single.setConnectionPoolSize(singleServerConfig.getConnectionPoolSize());
+                }
                 // 不使用 spring.data.redis 时，由本配置提供连接信息
                 if (StrUtil.isNotBlank(singleServerConfig.getAddress())) {
                     single.setAddress(normalizeRedisAddress(singleServerConfig.getAddress()));
@@ -140,24 +209,48 @@ public class RedisConfiguration {
                 if (singleServerConfig.getPassword() != null) {
                     single.setPassword(singleServerConfig.getPassword());
                 }
-                if (singleServerConfig.getDatabase() >= 0) {
+                if (singleServerConfig.getDatabase() != null && singleServerConfig.getDatabase() >= 0) {
                     single.setDatabase(singleServerConfig.getDatabase());
                 }
             }
             RedissonProperties.ClusterServersConfig clusterServersConfig = redissonProperties.getClusterServersConfig();
             if (ObjectUtil.isNotNull(clusterServersConfig) && getSentinelServersConfig(config) == null) {
                 var cluster = config.useClusterServers()
-                    .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()))
-                    .setTimeout(clusterServersConfig.getTimeout())
-                    .setClientName(clusterServersConfig.getClientName())
-                    .setIdleConnectionTimeout(clusterServersConfig.getIdleConnectionTimeout())
-                    .setSubscriptionConnectionPoolSize(clusterServersConfig.getSubscriptionConnectionPoolSize())
-                    .setMasterConnectionMinimumIdleSize(clusterServersConfig.getMasterConnectionMinimumIdleSize())
-                    .setMasterConnectionPoolSize(clusterServersConfig.getMasterConnectionPoolSize())
-                    .setSlaveConnectionMinimumIdleSize(clusterServersConfig.getSlaveConnectionMinimumIdleSize())
-                    .setSlaveConnectionPoolSize(clusterServersConfig.getSlaveConnectionPoolSize())
-                    .setReadMode(clusterServersConfig.getReadMode())
-                    .setSubscriptionMode(clusterServersConfig.getSubscriptionMode());
+                    .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()));
+                if (clusterServersConfig.getTimeout() != null && clusterServersConfig.getTimeout() > 0) {
+                    cluster.setTimeout(clusterServersConfig.getTimeout());
+                }
+                cluster.setClientName(clusterServersConfig.getClientName());
+                if (clusterServersConfig.getIdleConnectionTimeout() != null
+                    && clusterServersConfig.getIdleConnectionTimeout() > 0) {
+                    cluster.setIdleConnectionTimeout(clusterServersConfig.getIdleConnectionTimeout());
+                }
+                if (clusterServersConfig.getSubscriptionConnectionPoolSize() != null
+                    && clusterServersConfig.getSubscriptionConnectionPoolSize() > 0) {
+                    cluster.setSubscriptionConnectionPoolSize(clusterServersConfig.getSubscriptionConnectionPoolSize());
+                }
+                if (clusterServersConfig.getMasterConnectionMinimumIdleSize() != null
+                    && clusterServersConfig.getMasterConnectionMinimumIdleSize() > 0) {
+                    cluster.setMasterConnectionMinimumIdleSize(clusterServersConfig.getMasterConnectionMinimumIdleSize());
+                }
+                if (clusterServersConfig.getMasterConnectionPoolSize() != null
+                    && clusterServersConfig.getMasterConnectionPoolSize() > 0) {
+                    cluster.setMasterConnectionPoolSize(clusterServersConfig.getMasterConnectionPoolSize());
+                }
+                if (clusterServersConfig.getSlaveConnectionMinimumIdleSize() != null
+                    && clusterServersConfig.getSlaveConnectionMinimumIdleSize() > 0) {
+                    cluster.setSlaveConnectionMinimumIdleSize(clusterServersConfig.getSlaveConnectionMinimumIdleSize());
+                }
+                if (clusterServersConfig.getSlaveConnectionPoolSize() != null
+                    && clusterServersConfig.getSlaveConnectionPoolSize() > 0) {
+                    cluster.setSlaveConnectionPoolSize(clusterServersConfig.getSlaveConnectionPoolSize());
+                }
+                if (clusterServersConfig.getReadMode() != null) {
+                    cluster.setReadMode(clusterServersConfig.getReadMode());
+                }
+                if (clusterServersConfig.getSubscriptionMode() != null) {
+                    cluster.setSubscriptionMode(clusterServersConfig.getSubscriptionMode());
+                }
                 // 不使用 spring.data.redis 时，由本配置提供节点地址
                 if (clusterServersConfig.getNodeAddresses() != null && !clusterServersConfig.getNodeAddresses().isEmpty()) {
                     String[] addrs = clusterServersConfig.getNodeAddresses().stream()

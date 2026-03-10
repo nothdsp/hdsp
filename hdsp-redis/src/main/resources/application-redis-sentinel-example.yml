@@ -1,0 +1,66 @@
+# ============================================================
+# hdsp-redis 哨兵模式配置示例
+# 复制到 application.yml 或 application-*.yml 使用
+# ============================================================
+# 方式一：连接由 spring.data.redis.sentinel 提供，hdsp.redis.redisson 为扩展。
+# 方式二：可不配 spring.data.redis，在 sentinel-servers-config 中填写 master-name、sentinel-addresses（见下方注释）。
+# ============================================================
+
+# --- 方式一：Spring 标准配置（推荐）---
+spring:
+  data:
+    redis:
+      sentinel:
+        master: mymaster
+        nodes:
+          - 127.0.0.1:26379
+          - 127.0.0.1:26380
+          - 127.0.0.1:26381
+      password: your-password
+      timeout: 10s
+
+hdsp:
+  redis:
+    redisson:
+      key-prefix: myapp
+      threads: 16
+      netty-threads: 32
+      sentinel-servers-config:
+        # Redis 主从密码（与 spring.data.redis.password 二选一，此处可覆盖）
+        password: your-password
+        # 哨兵节点密码（sentinel.conf 中 requirepass，无则省略）
+        # sentinel-password: sentinel-requirepass
+        client-name: my-app
+        master-connection-minimum-idle-size: 32
+        master-connection-pool-size: 64
+        slave-connection-minimum-idle-size: 32
+        slave-connection-pool-size: 64
+        idle-connection-timeout: 10000
+        timeout: 3000
+        subscription-connection-pool-size: 50
+        read-mode: SLAVE
+        subscription-mode: MASTER
+
+# --- 方式二：仅使用 hdsp.redis.redisson（不配 spring.data.redis.sentinel）---
+# 将上方 spring.data.redis 整段注释掉，改用下方配置：
+#
+# hdsp:
+#   redis:
+#     redisson:
+#       key-prefix: myapp
+#       threads: 16
+#       netty-threads: 32
+#       sentinel-servers-config:
+#         master-name: mymaster
+#         sentinel-addresses:
+#           - 127.0.0.1:26379
+#           - 127.0.0.1:26380
+#           - 127.0.0.1:26381
+#         password: your-password
+#         # sentinel-password: sentinel-requirepass
+#         client-name: my-app
+#         master-connection-pool-size: 64
+#         slave-connection-pool-size: 64
+#         timeout: 3000
+#         read-mode: SLAVE
+#         subscription-mode: MASTER

@@ -1,0 +1,51 @@
+# ============================================================
+# hdsp-redis 单机模式配置示例
+# 复制到 application.yml 或 application-*.yml 使用
+# ============================================================
+# 方式一：连接由 spring.data.redis 提供，hdsp.redis.redisson 为扩展。
+# 方式二：可不配 spring.data.redis，在 single-server-config 中填写 address、password、database（见下方注释）。
+# ============================================================
+
+# --- 方式一：使用 Spring 配置（可选）---
+spring:
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 10s
+      ssl:
+        enabled: false
+
+hdsp:
+  redis:
+    redisson:
+      key-prefix: myapp
+      threads: 16
+      netty-threads: 32
+      single-server-config:
+        client-name: my-app
+        connection-minimum-idle-size: 8
+        connection-pool-size: 32
+        idle-connection-timeout: 10000   # 毫秒
+        timeout: 3000                    # 毫秒
+        subscription-connection-pool-size: 50
+
+# --- 方式二：仅使用 hdsp.redis.redisson（不配 spring.data.redis）---
+# 将上方 spring.data.redis 整段注释掉，在 single-server-config 中填写连接信息：
+#
+# hdsp:
+#   redis:
+#     redisson:
+#       key-prefix: myapp
+#       threads: 16
+#       netty-threads: 32
+#       single-server-config:
+#         address: redis://127.0.0.1:6379
+#         password: your-password
+#         database: 0
+#         client-name: my-app
+#         connection-pool-size: 32
+#         timeout: 3000
+#         subscription-connection-pool-size: 50

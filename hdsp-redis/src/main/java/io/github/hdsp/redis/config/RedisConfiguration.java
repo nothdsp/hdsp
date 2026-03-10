@@ -1,12 +1,15 @@
 package io.github.hdsp.redis.config;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 import org.redisson.client.codec.StringCodec;
+import org.redisson.config.Config;
 import org.redisson.codec.CompositeCodec;
 import org.redisson.codec.TypedJsonJacksonCodec;
+import org.redisson.config.SentinelServersConfig;
 import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -25,6 +28,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import io.github.hdsp.redis.config.properties.RedissonProperties;
 import io.github.hdsp.redis.handler.KeyPrefixHandler;
@@ -70,11 +74,58 @@ public class RedisConfiguration {
             if (isVirtual()) {
                 config.setNettyExecutor(new VirtualThreadTaskExecutor("redisson-"));
             }
+            // 哨兵模式：由 Spring 根据 spring.data.redis.sentinel 已创建时仅增强；否则由本模块创建
+            SentinelServersConfig existingSentinel = getSentinelServersConfig(config);
+            RedissonProperties.SentinelServersConfig sentinelServersConfig = redissonProperties.getSentinelServersConfig();
+            if (ObjectUtil.isNotNull(existingSentinel)) {
+                existingSentinel.setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()));
+                if (ObjectUtil.isNotNull(sentinelServersConfig)) {
+                    existingSentinel.setTimeout(sentinelServersConfig.getTimeout())
+                        .setClientName(sentinelServersConfig.getClientName())
+                        .setIdleConnectionTimeout(sentinelServersConfig.getIdleConnectionTimeout())
+                        .setSubscriptionConnectionPoolSize(sentinelServersConfig.getSubscriptionConnectionPoolSize())
+                        .setMasterConnectionMinimumIdleSize(sentinelServersConfig.getMasterConnectionMinimumIdleSize())
+                        .setMasterConnectionPoolSize(sentinelServersConfig.getMasterConnectionPoolSize())
+                        .setSlaveConnectionMinimumIdleSize(sentinelServersConfig.getSlaveConnectionMinimumIdleSize())
+                        .setSlaveConnectionPoolSize(sentinelServersConfig.getSlaveConnectionPoolSize())
+                        .setReadMode(sentinelServersConfig.getReadMode())
+                        .setSubscriptionMode(sentinelServersConfig.getSubscriptionMode());
+                    if (StrUtil.isNotBlank(sentinelServersConfig.getPassword())) {
+                        existingSentinel.setPassword(sentinelServersConfig.getPassword());
+                    }
+                    if (StrUtil.isNotBlank(sentinelServersConfig.getSentinelPassword())) {
+                        existingSentinel.setSentinelPassword(sentinelServersConfig.getSentinelPassword());
+                    }
+                }
+            } else if (ObjectUtil.isNotNull(sentinelServersConfig)
+                && StrUtil.isNotBlank(sentinelServersConfig.getMasterName())
+                && sentinelServersConfig.getSentinelAddresses() != null
+                && !sentinelServersConfig.getSentinelAddresses().isEmpty()) {
+                var sentinel = config.useSentinelServers()
+                    .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()))
+                    .setMasterName(sentinelServersConfig.getMasterName())
+                    .addSentinelAddress(sentinelServersConfig.getSentinelAddresses().toArray(new String[0]))
+                    .setTimeout(sentinelServersConfig.getTimeout())
+                    .setClientName(sentinelServersConfig.getClientName())
+                    .setIdleConnectionTimeout(sentinelServersConfig.getIdleConnectionTimeout())
+                    .setSubscriptionConnectionPoolSize(sentinelServersConfig.getSubscriptionConnectionPoolSize())
+                    .setMasterConnectionMinimumIdleSize(sentinelServersConfig.getMasterConnectionMinimumIdleSize())
+                    .setMasterConnectionPoolSize(sentinelServersConfig.getMasterConnectionPoolSize())
+                    .setSlaveConnectionMinimumIdleSize(sentinelServersConfig.getSlaveConnectionMinimumIdleSize())
+                    .setSlaveConnectionPoolSize(sentinelServersConfig.getSlaveConnectionPoolSize())
+                    .setReadMode(sentinelServersConfig.getReadMode())
+                    .setSubscriptionMode(sentinelServersConfig.getSubscriptionMode());
+                if (StrUtil.isNotBlank(sentinelServersConfig.getPassword())) {
+                    sentinel.setPassword(sentinelServersConfig.getPassword());
+                }
+                if (StrUtil.isNotBlank(sentinelServersConfig.getSentinelPassword())) {
+                    sentinel.setSentinelPassword(sentinelServersConfig.getSentinelPassword());
+                }
+            }
+            // 非哨兵模式时才使用单机/集群
             RedissonProperties.SingleServerConfig singleServerConfig = redissonProperties.getSingleServerConfig();
-            if (ObjectUtil.isNotNull(singleServerConfig)) {
-                // 使用单机模式
-                config.useSingleServer()
-                    //设置redis key前缀
+            if (ObjectUtil.isNotNull(singleServerConfig) && getSentinelServersConfig(config) == null) {
+                var single = config.useSingleServer()
                     .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()))
                     .setTimeout(singleServerConfig.getTimeout())
                     .setClientName(singleServerConfig.getClientName())
@@ -82,12 +133,20 @@ public class RedisConfiguration {
                     .setSubscriptionConnectionPoolSize(singleServerConfig.getSubscriptionConnectionPoolSize())
                     .setConnectionMinimumIdleSize(singleServerConfig.getConnectionMinimumIdleSize())
                     .setConnectionPoolSize(singleServerConfig.getConnectionPoolSize());
+                // 不使用 spring.data.redis 时，由本配置提供连接信息
+                if (StrUtil.isNotBlank(singleServerConfig.getAddress())) {
+                    single.setAddress(normalizeRedisAddress(singleServerConfig.getAddress()));
+                }
+                if (singleServerConfig.getPassword() != null) {
+                    single.setPassword(singleServerConfig.getPassword());
+                }
+                if (singleServerConfig.getDatabase() >= 0) {
+                    single.setDatabase(singleServerConfig.getDatabase());
+                }
             }
-            // 集群配置方式 参考下方注释
             RedissonProperties.ClusterServersConfig clusterServersConfig = redissonProperties.getClusterServersConfig();
-            if (ObjectUtil.isNotNull(clusterServersConfig)) {
-                config.useClusterServers()
-                    //设置redis key前缀
+            if (ObjectUtil.isNotNull(clusterServersConfig) && getSentinelServersConfig(config) == null) {
+                var cluster = config.useClusterServers()
                     .setNameMapper(new KeyPrefixHandler(redissonProperties.getKeyPrefix()))
                     .setTimeout(clusterServersConfig.getTimeout())
                     .setClientName(clusterServersConfig.getClientName())
@@ -99,8 +158,22 @@ public class RedisConfiguration {
                     .setSlaveConnectionPoolSize(clusterServersConfig.getSlaveConnectionPoolSize())
                     .setReadMode(clusterServersConfig.getReadMode())
                     .setSubscriptionMode(clusterServersConfig.getSubscriptionMode());
+                // 不使用 spring.data.redis 时，由本配置提供节点地址
+                if (clusterServersConfig.getNodeAddresses() != null && !clusterServersConfig.getNodeAddresses().isEmpty()) {
+                    String[] addrs = clusterServersConfig.getNodeAddresses().stream()
+                        .map(RedisConfiguration::normalizeRedisAddress)
+                        .toArray(String[]::new);
+                    cluster.addNodeAddress(addrs);
+                }
+                if (StrUtil.isNotBlank(clusterServersConfig.getPassword())) {
+                    cluster.setPassword(clusterServersConfig.getPassword());
+                }
             }
-            log.info("初始化 redis 配置");
+            if (getSentinelServersConfig(config) != null) {
+                log.info("初始化 redis 配置（哨兵模式）");
+            } else {
+                log.info("初始化 redis 配置");
+            }
         };
     }
 
@@ -114,6 +187,33 @@ public class RedisConfiguration {
 
     public static boolean isVirtual() {
         return Threading.VIRTUAL.isActive(SpringUtil.getBean(Environment.class));
+    }
+
+    /**
+     * 通过反射获取 Config 的哨兵配置（getSentinelServersConfig 为 protected）
+     */
+    private static SentinelServersConfig getSentinelServersConfig(Config config) {
+        try {
+            Method m = Config.class.getDeclaredMethod("getSentinelServersConfig");
+            m.setAccessible(true);
+            return (SentinelServersConfig) m.invoke(config);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 地址若未带 redis:// 或 rediss:// 则补上 redis://
+     */
+    static String normalizeRedisAddress(String address) {
+        if (StrUtil.isBlank(address)) {
+            return address;
+        }
+        String s = address.trim();
+        if (s.startsWith("rediss://") || s.startsWith("redis://")) {
+            return s;
+        }
+        return "redis://" + s;
     }
 
     /**
@@ -134,7 +234,7 @@ public class RedisConfiguration {
      *     # 是否开启ssl
      *     ssl.enabled: false
      *
-     * redisson:
+     * hdsp.redis.redisson:
      *   # 线程池数量
      *   threads: 16
      *   # Netty线程池数量
@@ -161,6 +261,30 @@ public class RedisConfiguration {
      *     readMode: "SLAVE"
      *     # 订阅模式
      *     subscriptionMode: "MASTER"
+     *
+     * --- # redis 哨兵模式（与单机/集群二选一）
+     * spring.data:
+     *   redis:
+     *     sentinel:
+     *       master: mymaster
+     *       nodes:
+     *         - 127.0.0.1:26379
+     *         - 127.0.0.1:26380
+     *     password: your-password
+     *     timeout: 10s
+     * hdsp.redis.redisson:
+     *   key-prefix: myapp
+     *   sentinel-servers-config:
+     *     client-name: my-app
+     *     master-connection-minimum-idle-size: 32
+     *     master-connection-pool-size: 64
+     *     slave-connection-minimum-idle-size: 32
+     *     slave-connection-pool-size: 64
+     *     idle-connection-timeout: 10000
+     *     timeout: 3000
+     *     subscription-connection-pool-size: 50
+     *     read-mode: SLAVE
+     *     subscription-mode: MASTER
      */
 
 }

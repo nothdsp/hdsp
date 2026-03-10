@@ -1,0 +1,61 @@
+# ============================================================
+# hdsp-redis 集群模式配置示例
+# 复制到 application.yml 或 application-*.yml 使用
+# ============================================================
+# 方式一：连接由 spring.data.redis.cluster 提供，hdsp.redis.redisson 为扩展。
+# 方式二：可不配 spring.data.redis，在 cluster-servers-config 中填写 nodeAddresses、password（见下方注释）。
+# ============================================================
+
+# --- 方式一：使用 Spring 配置（可选）---
+spring:
+  data:
+    redis:
+      cluster:
+        nodes:
+          - 192.168.0.100:6379
+          - 192.168.0.101:6379
+          - 192.168.0.102:6379
+      password: your-password
+      timeout: 10s
+      ssl:
+        enabled: false
+
+hdsp:
+  redis:
+    redisson:
+      key-prefix: myapp
+      threads: 16
+      netty-threads: 32
+      cluster-servers-config:
+        client-name: my-app
+        master-connection-minimum-idle-size: 32
+        master-connection-pool-size: 64
+        slave-connection-minimum-idle-size: 32
+        slave-connection-pool-size: 64
+        idle-connection-timeout: 10000
+        timeout: 3000
+        subscription-connection-pool-size: 50
+        read-mode: SLAVE
+        subscription-mode: MASTER
+
+# --- 方式二：仅使用 hdsp.redis.redisson（不配 spring.data.redis）---
+# 将上方 spring.data.redis 整段注释掉，在 cluster-servers-config 中填写节点与密码：
+#
+# hdsp:
+#   redis:
+#     redisson:
+#       key-prefix: myapp
+#       threads: 16
+#       netty-threads: 32
+#       cluster-servers-config:
+#         node-addresses:
+#           - 192.168.0.100:6379
+#           - 192.168.0.101:6379
+#           - 192.168.0.102:6379
+#         password: your-password
+#         client-name: my-app
+#         master-connection-pool-size: 64
+#         slave-connection-pool-size: 64
+#         timeout: 3000
+#         read-mode: SLAVE
+#         subscription-mode: MASTER

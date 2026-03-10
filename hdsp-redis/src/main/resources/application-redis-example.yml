@@ -1,0 +1,15 @@
+# ============================================================
+# hdsp-redis 配置示例索引
+# ============================================================
+# 单机/集群/哨兵均支持两种方式：
+#   方式一：连接由 spring.data.redis 提供，hdsp.redis.redisson 为扩展。
+#   方式二：不配 spring.data.redis，仅在 hdsp.redis.redisson 中填写连接信息。
+#
+# 请按部署模式选用对应示例文件，复制内容到 application.yml 或 application-*.yml：
+#   单机：application-redis-standalone-example.yml
+#   集群：application-redis-cluster-example.yml
+#   哨兵：application-redis-sentinel-example.yml
+#
+# 若需完全自定义（如主从、多节点等），可使用 Redisson 原生配置：
+#   spring.data.redis.redisson.file: classpath:redisson.yaml
+# ============================================================
